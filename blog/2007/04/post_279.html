@@ -119,19 +119,7 @@ mtUpdateSignInWidget();
 </ul>
 
 
-                    <div class="widget-search widget">
-    <h3 class="widget-header">検索</h3>
-    <div class="widget-content">
-        <form method="get" action="https://nazmard.github.io/aquatrip-diving/blog/mt-search.cgi">
-            <input type="text" id="search" class="ti" name="search" value="" />
-
-            <input type="hidden" name="IncludeBlogs" value="1" />
-
-            <input type="hidden" name="limit" value="20" />
-            <input type="submit" accesskey="4" value="検索" />
-        </form>
-    </div>
-</div>
+                    
 
                 </div>
             </div>
@@ -219,56 +207,7 @@ mtUpdateSignInWidget();
     
     
     
-    <div class="comments-open" id="comments-open">
-    <h2 class="comments-open-header">コメントする</h2>
-    <div class="comments-open-content">
-        <div id="comment-greeting"></div>
-        <form method="post" action="https://nazmard.github.io/aquatrip-diving/blog/mt-comments.cgi" name="comments_form" id="comments-form" onsubmit="return mtCommentOnSubmit(this)">
-            <input type="hidden" name="static" value="1" />
-            <input type="hidden" name="entry_id" value="326" />
-            <input type="hidden" name="__lang" value="ja" />
-            <input type="hidden" name="parent_id" value="" id="comment-parent-id" />
-            <input type="hidden" name="armor" value="1" />
-            <input type="hidden" name="preview" value="" />
-            <input type="hidden" name="sid" value="" />
-            <div id="comments-open-data">
-                <div id="comment-form-name">
-                    <label for="comment-author">名前</label>
-                    <input id="comment-author" name="author" size="30" value="" onfocus="mtCommentFormOnFocus()" />
-                </div>
-                <div id="comment-form-email">
-                    <label for="comment-email">電子メール</label>
-                    <input id="comment-email" name="email" size="30" value="" onfocus="mtCommentFormOnFocus()" />
-                </div>
-                <div id="comment-form-url">
-                    <label for="comment-url">URL</label>
-                    <input id="comment-url" name="url" size="30" value="" onfocus="mtCommentFormOnFocus()" />
-                </div>
-
-                <div id="comment-form-remember-me">
-                    <input type="checkbox" id="comment-bake-cookie" name="bakecookie" onclick="mtRememberMeOnClick(this)" value="1" accesskey="r" />
-                    <label for="comment-bake-cookie">ログイン情報を記憶</label>
-                </div>
-
-            </div>
-            <div id="comment-form-reply" style="display:none">
-                <input type="checkbox" id="comment-reply" name="comment_reply" value="" onclick="mtSetCommentParentID()" />
-                <label for="comment-reply" id="comment-reply-label"></label>
-            </div>
-            <div id="comments-open-text">
-                <label for="comment-text">コメント
-                (スタイル用のHTMLタグを使えます)</label>
-                <textarea id="comment-text" name="text" rows="15" cols="50" onfocus="mtCommentFormOnFocus()"></textarea>
-            </div>
-            <div id="comments-open-captcha"></div>
-            <div id="comments-open-footer">
-                <input type="submit" accesskey="v" name="preview_button" id="comment-preview" value="確認" onclick="this.form.preview.value='1';" />
-                <input type="submit" accesskey="s" name="post" id="comment-submit" value="投稿" />
     
-            </div>
-        </form>
-    </div>
-</div>
 <script type="text/javascript">
 <!--
 mtAttachEvent("load", mtEntryOnLoad);
