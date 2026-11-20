@@ -336,6 +336,7 @@ function _HpbJumpURL(url)
   var calCursor = null;
   function pad(n){ return (n < 10 ? "0" : "") + n; }
   function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function linkifyEsc(t){ return t.replace(/https?:\/\/[^\s<>"'、。）」』】]+/g, function(u){ return '<a href="' + u + '" target="_blank" rel="noopener" style="color:#9fd8ff">' + u + '</a>'; }); }
   function parseName(name){
     var m = name.match(/^post-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})\.html$/);
     if(!m) return null;
@@ -400,7 +401,7 @@ function _HpbJumpURL(url)
       h += '<a href="' + it.url + '" style="font-size:16px;font-weight:800;color:#fff;text-decoration:none;line-height:1.4">' + esc(it.title) + '</a>';
       h += '<div style="display:flex;gap:10px;margin-top:6px;align-items:flex-start">';
       if(it.img) h += '<img src="' + it.img + '" alt="" style="width:110px;height:82px;object-fit:cover;border-radius:8px;flex:none">';
-      h += '<p style="font-size:13px;line-height:1.6;color:#eaf6ff;margin:0">' + esc(it.excerpt) + '</p></div>';
+      h += '<p style="font-size:13px;line-height:1.6;color:#eaf6ff;margin:0">' + linkifyEsc(esc(it.excerpt)) + '</p></div>';
       h += '<a href="' + it.url + '" style="font-size:13px;color:#9fd8ff;font-weight:700">続きを読む →</a>';
       h += '</div>';
       return h;
