@@ -1,0 +1,4 @@
+<h2>POQUE</h2><br>
+
+<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' codebase='http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0' width='160' height='230'><param name='movie' value='http://あなたのpoque.swfファイルが置いてあるURL/poque.swf?bgcolor=ffffff&xmlurl=http://あなたのXMLファイルが置いてあるURL/xml&textmode=0&showspeed=10&'><param name='quality' value='high'><embed src='http://あなたのpoque.swが置いてあるURL/poque.swf?bgcolor=ffffff&xmlurl=http://あなたのXMLファイルが置いてあるURL/xml&textmode=0&showspeed=10&' quality='high' pluginspage='http://www.macromedia.com/go/getflashplayer' type='application/x-shockwave-flash' width='160' height='230'></embed></object><br>
+<br>
