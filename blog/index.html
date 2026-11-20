@@ -24,8 +24,10 @@ transitional.dtd">
 
 <div id="banner">
 <h1><a href="https://nazmard.github.io/aquatrip-diving/blog/" accesskey="1">八丈島アクアトリップダイビングブログ</a></h1>
-<h2><P>潜ればみんなお友達！八丈島アクアトリップダイビングの<FONT color="#ff00cc">気まぐれ</FONT>ブログ<BR>
-<A href="https://nazmard.github.io/aquatrip-diving/" target="_blank">アクアトリップダイビングホームページはこちらです</A><BR>
+<h2><P>潜ればみんなお友達！八丈島アクアトリップダイビングの<FONT color="#ff00cc">気まぐれ</FONT>ブログ<BR>
+
+<A href="https://nazmard.github.io/aquatrip-diving/" target="_blank">アクアトリップダイビングホームページはこちらです</A><BR>
+
 <FONT color="#0099ff" size="-2">現在病気療養中のためダイビングは行っていません。</FONT></P></h2>
 </div>
 
@@ -919,6 +921,54 @@ function _HpbJumpURL(url)
 </div>
 <div id="center">
 <div class="content">
+<div id="aq-newposts" style="background:#fff;border-radius:14px;padding:16px 18px;margin:0 0 22px;box-shadow:0 10px 26px rgba(0,38,77,.25);font-family:system-ui,-apple-system,'Noto Sans JP',sans-serif;color:#173447">
+<div style="font-size:18px;font-weight:900;color:#073b56">📝 新着記事<span style="font-size:12px;font-weight:700;color:#617985">（新しい記事はこちらに増えていきます）</span></div>
+<ul id="aq-newposts-list" style="list-style:none;margin:10px 0;padding:0">
+<li style="font-size:14px;color:#617985">読み込み中…</li>
+</ul>
+<div style="font-size:14px;font-weight:800">
+<a href="new.html" style="color:#087eaa">新着記事をすべて見る →</a>　
+<a href="write.html" style="color:#087eaa">記事を書く</a>
+</div>
+</div>
+<script>
+(function(){
+  var API = "https://api.github.com/repos/nazmard/aquatrip-diving/contents/blog/posts";
+  var ul = document.getElementById("aq-newposts-list");
+  function fail(){ ul.innerHTML = '<li style="font-size:14px"><a href="new.html" style="color:#087eaa">新着記事ページへ →</a></li>'; }
+  fetch(API).then(function(r){ return r.json(); }).then(function(files){
+    if(!files || !files.filter){ fail(); return; }
+    var posts = files.filter(function(f){ return f.type === "file" && /^post-.*\.html$/.test(f.name); })
+                     .sort(function(a,b){ return a.name < b.name ? 1 : -1; }).slice(0,5);
+    if(!posts.length){ ul.innerHTML = '<li style="font-size:14px;color:#617985">まだ新しい記事はありません</li>'; return; }
+    Promise.all(posts.map(function(f){
+      return fetch("posts/" + f.name).then(function(r){ return r.text(); }).then(function(t){
+        var d = new DOMParser().parseFromString(t, "text/html");
+        var title = (d.querySelector("title") ? d.querySelector("title").textContent : f.name).replace(/ - .*$/, "");
+        var timeEl = d.querySelector("time");
+        var date = timeEl ? (timeEl.getAttribute("datetime") || "") : "";
+        return { name: f.name, title: title, date: date };
+      }).catch(function(){ return { name: f.name, title: f.name, date: "" }; });
+    })).then(function(items){
+      ul.innerHTML = "";
+      items.forEach(function(it){
+        var li = document.createElement("li");
+        li.style.cssText = "padding:7px 0;border-bottom:1px dashed #d9e9ec;font-size:14px";
+        var span = document.createElement("span");
+        span.style.cssText = "color:#617985;font-weight:700;margin-right:8px";
+        span.textContent = it.date;
+        var a = document.createElement("a");
+        a.href = "posts/" + it.name;
+        a.style.color = "#087eaa";
+        a.textContent = it.title;
+        li.appendChild(span); li.appendChild(a);
+        ul.appendChild(li);
+      });
+    }).catch(fail);
+  }).catch(fail);
+})();
+</script>
+
 
 
 <!--
