@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#075985">
+<title>ブログ投稿ツール｜アクアトリップダイビング</title>
+<style>
+:root{--navy:#073b56;--blue:#087eaa;--teal:#00a6a6;--coral:#ff765e;--ink:#173447;--muted:#617985;--line:#d9e9ec}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#d9f3f0 0%,#f7fcfd 52%,#fff0e6 100%);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;min-height:100vh}
+.wrap{max-width:760px;margin:auto;padding:16px 13px 60px}
+h1{font-size:22px;color:var(--navy);margin:6px 0 4px}
+.sub{font-size:13px;color:var(--muted);line-height:1.8;margin:0 0 14px}
+.panel{background:#ffffffed;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 10px 30px #16445c0d;margin-bottom:14px}
+.panel h2{font-size:16px;color:var(--navy);margin:0 0 8px}
+label{display:block;font-size:13px;font-weight:900;color:var(--navy);margin:14px 0 6px}
+label:first-child{margin-top:0}
+input[type=text],input[type=password],input[type=date],textarea{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:white;color:var(--ink)}
+textarea{line-height:1.8;resize:vertical}
+.hint{font-size:11px;color:var(--muted);line-height:1.7;margin-top:5px}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.thumb{position:relative;width:96px;height:96px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:#000a;color:white;font-size:14px;line-height:1;cursor:pointer}
+.vrow{display:flex;gap:8px;margin-top:8px}
+.vrow input{flex:1}
+.vrow button{flex:0 0 auto;border:0;border-radius:10px;background:#f3d9d4;color:#8a2f22;font-weight:900;padding:0 13px;cursor:pointer}
+.addbtn{margin-top:10px;border:1.5px dashed var(--blue);background:#eef8fa;color:var(--blue);font-weight:900;border-radius:10px;padding:10px 14px;cursor:pointer;width:100%}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:6px}
+.btn{border:0;cursor:pointer;font:inherit;font-weight:900;font-size:16px;border-radius:13px;padding:15px 10px;text-align:center}
+.preview{background:#edf7f8;color:var(--navy)}
+.publish{background:var(--teal);color:white;box-shadow:0 5px 0 #007d7d}
+.publish:active{transform:translateY(3px);box-shadow:0 2px 0 #007d7d}
+.download{background:var(--coral);color:white;box-shadow:0 5px 0 #d95a48}
+.download:active{transform:translateY(3px);box-shadow:0 2px 0 #d95a48}
+.wide{grid-column:1/-1}
+.steps{font-size:13px;line-height:2;color:#365263;margin:0;padding-left:20px}
+.done{display:none;background:#e9f9f1;border:1px solid #a9e4c5;color:#14532d;border-radius:12px;padding:13px 15px;font-size:13px;line-height:1.9;margin-top:12px}
+.err{display:none;background:#fdf0ee;border:1px solid #f0b8ae;color:#7c2415;border-radius:12px;padding:13px 15px;font-size:13px;line-height:1.9;margin-top:12px}
+code{background:#eef4f6;border-radius:5px;padding:1px 6px;font-size:12px}
+.ghrow{display:flex;gap:8px;margin-top:8px}
+.ghrow input{flex:1}
+.ghrow button{flex:0 0 auto;border:0;border-radius:10px;background:var(--navy);color:white;font-weight:900;padding:0 16px;cursor:pointer}
+.ghstatus{font-size:13px;font-weight:800;margin-top:10px;color:var(--muted)}
+.ghstatus.ok{color:#0d7a4a}
+.postrow{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13px}
+.postrow .meta{flex:1;min-width:0}
+.postrow .fname{color:var(--muted);font-size:11px;word-break:break-all}
+.postrow .ptitle{font-weight:800;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.delbtn{flex:0 0 auto;border:0;border-radius:9px;background:#f3d9d4;color:#8a2f22;font-weight:900;padding:9px 13px;cursor:pointer}
+.loadbtn{margin-top:6px;border:1.5px solid var(--blue);background:#eef8fa;color:var(--blue);font-weight:900;border-radius:10px;padding:10px 14px;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<main class="wrap">
+<h1>📝 ブログ投稿ツール</h1>
+<p class="sub">八丈島アクアトリップダイビングブログの新しい記事を作るページです。写真も動画も、1つの記事に一緒に貼れます。<br>公開と削除は、下の「GitHub接続」をした本人だけができる仕組みです（接続キーが無い人は、公開も削除もできません）。</p>
+
+<section class="panel">
+<h2>🔑 GitHub接続（本人確認）</h2>
+<p class="hint" style="margin-top:0">公開・削除には、あなたのGitHubアカウントで発行した「接続キー」が必要です。キーはこのブラウザの中だけに保存され、サイトや記事には残りません。キーが無い人はこのページを開けても、公開・削除ボタンは動きません。</p>
+<div class="ghrow">
+<input type="password" id="token" placeholder="接続キー（github_pat_…）を貼り付け" autocomplete="off">
+<button type="button" id="btnConnect">接続する</button>
+</div>
+<div class="ghstatus" id="ghStatus">未接続です</div>
+<button type="button" class="loadbtn" id="btnDisconnect" style="display:none">接続を解除する（このブラウザからキーを消す）</button>
+</section>
+
+<section class="panel">
+<label for="date">日付</label>
+<input type="date" id="date">
+<label for="title">タイトル</label>
+<input type="text" id="title" placeholder="例：今日の八丈富士">
+<label for="cat">カテゴリ（自由に入力できます）</label>
+<input type="text" id="cat" list="catlist" placeholder="例：今日の八丈島">
+<datalist id="catlist">
+<option value="今日の八丈島"></option>
+<option value="ダイビング"></option>
+<option value="行事"></option>
+<option value="八丈島"></option>
+<option value="今日の八丈富士"></option>
+</datalist>
+<label for="body">本文</label>
+<textarea id="body" rows="10" placeholder="本文を書いてください。空行を入れると段落が分かれます。"></textarea>
+
+<label>写真（何枚でもOK・自動で小さくして記事に入ります）</label>
+<input type="file" id="photos" accept="image/*" multiple>
+<div class="thumbs" id="thumbs"></div>
+
+<label>動画（YouTube / Internet Archive のURL・何本でもOK）</label>
+<div id="videos"></div>
+<button type="button" class="addbtn" id="addVideo">＋ 動画のURLを追加</button>
+<p class="hint">対応するURL：YouTubeの動画ページ（youtube.com/watch…、youtu.be/…、ショートも可）／ Internet Archiveの動画ページ（archive.org/details/…）／ mp4ファイルのURL</p>
+</section>
+
+<section class="panel">
+<div class="actions">
+<button type="button" class="btn preview" id="btnPreview">プレビューを見る</button>
+<button type="button" class="btn download" id="btnDownload">記事ファイルを作る</button>
+<button type="button" class="btn publish wide" id="btnPublish">🚀 そのまま公開する（接続が必要）</button>
+</div>
+<div class="done" id="done"></div>
+<div class="err" id="err"></div>
+</section>
+
+<section class="panel">
+<h2>🗑 記事の管理（削除）</h2>
+<p class="hint" style="margin-top:0">公開中の記事の一覧です。削除はGitHub接続をした本人だけができます。削除すると、数分でサイトからも消えます（GitHubに履歴は残るので、あとから復活もできます）。</p>
+<button type="button" class="loadbtn" id="btnLoadPosts">記事の一覧を読み込む</button>
+<div id="postList"></div>
+</section>
+
+<section class="panel">
+<p style="margin:0 0 6px;font-weight:900;color:var(--navy)">公開の手順（接続している場合）</p>
+<ol class="steps">
+<li>「GitHub接続」で接続する（キーの貼り付けは初回だけ）</li>
+<li>記事を書いて「そのまま公開する」を押す</li>
+<li>数分で公開され、「ブログ新着記事」のページと旧ブログの新着ボックスに自動で並びます</li>
+</ol>
+<p style="margin:14px 0 6px;font-weight:900;color:var(--navy)">公開の手順（接続していない場合）</p>
+<ol class="steps">
+<li>「記事ファイルを作る」を押す（ファイルがダウンロードされます）</li>
+<li>ダウンロードしたファイルを、パソコンの <code>aquatrip-diving\blog\posts</code> フォルダに入れる</li>
+<li>GitHub Desktopで Commit → Push origin</li>
+</ol>
+</section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const REPO = "nazmard/aquatrip-diving";
+const POSTS_PATH = "blog/posts";
+const API = "https://api.github.com/repos/" + REPO;
+const photos = []; // dataURL strings
+const today = new Date();
+const pad = n => String(n).padStart(2, "0");
+$("date").value = today.getFullYear() + "-" + pad(today.getMonth() + 1) + "-" + pad(today.getDate());
+
+/* ---------- GitHub connection ---------- */
+function getToken() { try { return localStorage.getItem("aq_gh_token") || ""; } catch (e) { return ""; } }
+function setToken(t) { try { if (t) localStorage.setItem("aq_gh_token", t); else localStorage.removeItem("aq_gh_token"); } catch (e) {} }
+function ghHeaders() {
+  return {
+    "Authorization": "Bearer " + getToken(),
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "Content-Type": "application/json"
+  };
+}
+async function ghFetch(path, opts) {
+  const res = await fetch(API + path, Object.assign({ headers: ghHeaders() }, opts || {}));
+  return res;
+}
+function showErr(msg) { const e = $("err"); e.style.display = "block"; e.innerHTML = msg; $("done").style.display = "none"; }
+function showDone(msg) { const d = $("done"); d.style.display = "block"; d.innerHTML = msg; $("err").style.display = "none"; }
+function refreshGhStatus() {
+  const has = !!getToken();
+  const st = $("ghStatus");
+  if (has) { st.textContent = "✅ 接続済みです（このブラウザにキーが保存されています）"; st.className = "ghstatus ok"; }
+  else { st.textContent = "未接続です"; st.className = "ghstatus"; }
+  $("btnDisconnect").style.display = has ? "block" : "none";
+}
+$("btnConnect").addEventListener("click", async () => {
+  const t = $("token").value.trim();
+  if (!t) { showErr("接続キーが入力されていません。"); return; }
+  setToken(t);
+  try {
+    const res = await ghFetch("/contents/" + POSTS_PATH + "?ref=main");
+    if (res.ok) {
+      $("token").value = "";
+      refreshGhStatus();
+      showDone("GitHubに接続しました。これで「そのまま公開する」と「記事の削除」が使えます。");
+    } else if (res.status === 401) {
+      setToken(""); refreshGhStatus();
+      showErr("キーが正しくないようです（401）。キーのコピーし直しをお試しください。");
+    } else if (res.status === 403 || res.status === 404) {
+      setToken(""); refreshGhStatus();
+      showErr("このキーではブログのフォルダにアクセスできません（" + res.status + "）。キーの権限（対象リポジトリとContentsの読み書き）をご確認ください。");
+    } else {
+      setToken(""); refreshGhStatus();
+      showErr("接続できませんでした（" + res.status + "）。時間をおいてお試しください。");
+    }
+  } catch (e) {
+    setToken(""); refreshGhStatus();
+    showErr("通信エラーで接続できませんでした。ネット接続をご確認ください。");
+  }
+});
+$("btnDisconnect").addEventListener("click", () => {
+  setToken("");
+  refreshGhStatus();
+  showDone("接続を解除しました。このブラウザからキーを消したので、このままでは公開・削除はできません。");
+});
+refreshGhStatus();
+
+/* ---------- Photos ---------- */
+$("photos").addEventListener("change", async ev => {
+  for (const file of ev.target.files) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    await new Promise(res => { img.onload = res; img.src = url; });
+    const max = 1600;
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    photos.push(canvas.toDataURL("image/jpeg", 0.85));
+  }
+  ev.target.value = "";
+  renderThumbs();
+});
+function renderThumbs() {
+  const box = $("thumbs");
+  box.innerHTML = "";
+  photos.forEach((src, i) => {
+    const d = document.createElement("div");
+    d.className = "thumb";
+    const im = document.createElement("img");
+    im.src = src;
+    const b = document.createElement("button");
+    b.textContent = "×";
+    b.title = "この写真を外す";
+    b.addEventListener("click", () => { photos.splice(i, 1); renderThumbs(); });
+    d.appendChild(im); d.appendChild(b);
+    box.appendChild(d);
+  });
+}
+
+/* ---------- Videos ---------- */
+function addVideoRow(value) {
+  const row = document.createElement("div");
+  row.className = "vrow";
+  const inp = document.createElement("input");
+  inp.type = "text";
+  inp.placeholder = "https://www.youtube.com/watch?v=…";
+  inp.value = value || "";
+  const del = document.createElement("button");
+  del.type = "button";
+  del.textContent = "削除";
+  del.addEventListener("click", () => row.remove());
+  row.appendChild(inp); row.appendChild(del);
+  $("videos").appendChild(row);
+}
+$("addVideo").addEventListener("click", () => addVideoRow(""));
+addVideoRow("");
+
+/* ---------- Post building ---------- */
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function videoHTML(url) {
+  url = url.trim();
+  if (!url) return "";
+  let m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/);
+  if (m) return '<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/' + m[1] + '" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+  m = url.match(/archive\.org\/details\/([^/?&#]+)/);
+  if (m) return '<div class="video"><iframe src="https://archive.org/embed/' + m[1] + '" title="Internet Archive video" frameborder="0" allowfullscreen></iframe></div>';
+  if (/\.(mp4|webm|mov)(\?|#|$)/i.test(url)) return '<div class="video"><video controls preload="metadata" src="' + esc(url) + '"></video></div>';
+  return '<p class="vlink"><a href="' + esc(url) + '" target="_blank" rel="noopener">▶ 動画を見る</a></p>';
+}
+function buildPost() {
+  const dateVal = $("date").value || $("date").defaultValue;
+  const title = $("title").value.trim() || "（無題）";
+  const cat = $("cat").value.trim();
+  const body = $("body").value;
+  const dateParts = dateVal.split("-");
+  const dateJP = dateParts.length === 3 ? (dateParts[0] + "年" + Number(dateParts[1]) + "月" + Number(dateParts[2]) + "日") : dateVal;
+  const paras = body.split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
+    .map(p => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("\n");
+  const imgs = photos.map(src => '<p><img src="' + src + '" alt=""></p>').join("\n");
+  const vids = Array.from(document.querySelectorAll("#videos input")).map(i => videoHTML(i.value)).filter(Boolean).join("\n");
+  const catHTML = cat ? '<p class="cat">カテゴリ： ' + esc(cat) + "</p>" : "";
+  const html = "<!doctype html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>" + esc(title) + " - 八丈島アクアトリップダイビングブログ</title>\n<style>\n"
+    + "body{margin:0;background-color:#0262F5;background-image:url(\"../body_back.jpg\");font-family:system-ui,-apple-system,\"Noto Sans JP\",sans-serif;color:#173447}\n"
+    + ".wrap{max-width:780px;margin:0 auto;padding:18px 12px 50px}\n"
+    + "header{color:#fff;text-align:center;padding:10px 0 16px}\n"
+    + "header .blogname{font-size:clamp(20px,5vw,30px);font-weight:900;text-shadow:0 2px 8px #003a75}\n"
+    + "header .tag{font-size:13px;margin-top:5px;text-shadow:0 1px 5px #003a75}\n"
+    + "nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}\n"
+    + "nav a{background:#ffffff2b;border:1px solid #ffffff66;color:#fff;text-decoration:none;font-weight:800;font-size:13px;padding:7px 13px;border-radius:99px}\n"
+    + "article{background:#fff;border-radius:16px;padding:24px 20px;box-shadow:0 12px 30px #00264d33}\n"
+    + "article time{font-size:13px;color:#617985;font-weight:800}\n"
+    + "article h1{font-size:clamp(21px,5vw,27px);color:#073b56;margin:6px 0 4px;line-height:1.4}\n"
+    + "article .cat{font-size:12px;color:#087eaa;font-weight:800;margin:0 0 10px}\n"
+    + "article p{font-size:15px;line-height:1.95;margin:12px 0}\n"
+    + "article img{max-width:100%;height:auto;border-radius:10px;display:block;margin:0 auto}\n"
+    + ".video{position:relative;padding-top:56.25%;margin:16px 0;border-radius:10px;overflow:hidden;background:#000}\n"
+    + ".video iframe,.video video{position:absolute;inset:0;width:100%;height:100%;border:0}\n"
+    + ".vlink a{color:#087eaa;font-weight:900}\n"
+    + "footer{color:#dff3ff;text-align:center;font-size:11px;margin-top:18px;line-height:1.9}\n"
+    + "</style>\n</head>\n<body>\n<div class=\"wrap\">\n<header>\n<div class=\"blogname\">八丈島アクアトリップダイビングブログ</div>\n<div class=\"tag\">潜ればみんなお友達！八丈島アクアトリップダイビングの気まぐれブログ</div>\n<nav><a href=\"../new.html\">📝 新着記事</a><a href=\"../\">📖 昔のブログ（2004〜2011）</a><a href=\"../../\">🌊 ホームページ</a></nav>\n</header>\n<article>\n<time datetime=\"" + esc(dateVal) + "\">" + esc(dateJP) + "</time>\n<h1>" + esc(title) + "</h1>\n" + catHTML + "\n" + paras + "\n" + imgs + "\n" + vids + "\n</article>\n<footer>八丈島アクアトリップダイビング｜八丈島シュノーケリングセンター<br>Copyright(C) 1991- AQUATRIP DIVING All Rights Reserved</footer>\n</div>\n</body>\n</html>";
+  const now = new Date();
+  const fname = "post-" + dateVal.replace(/-/g, "") + "-" + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds()) + ".html";
+  return { html, fname, title };
+}
+$("btnPreview").addEventListener("click", () => {
+  const { html } = buildPost();
+  const blob = new Blob([html], { type: "text/html" });
+  window.open(URL.createObjectURL(blob), "_blank");
+});
+$("btnDownload").addEventListener("click", () => {
+  const { html, fname } = buildPost();
+  const blob = new Blob([html], { type: "text/html" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  showDone("記事ファイル <b>" + fname + "</b> をダウンロードしました。<br>パソコンの <b>aquatrip-diving\\blog\\posts</b> フォルダに入れて、GitHub Desktopで Commit → Push origin してください。");
+});
+
+/* ---------- Direct publish ---------- */
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+$("btnPublish").addEventListener("click", async () => {
+  if (!getToken()) { showErr("先に「GitHub接続」をしてください。接続キーが無いと公開できません。"); return; }
+  const { html, fname, title } = buildPost();
+  if (html.length > 900000) {
+    showErr("写真が多くて記事が大きいため、そのまま公開はできません。「記事ファイルを作る」でダウンロードして、GitHub Desktopから公開してください。");
+    return;
+  }
+  if (!confirm("この記事を公開しますか？\nタイトル： " + title)) return;
+  try {
+    const res = await ghFetch("/contents/" + POSTS_PATH + "/" + fname, {
+      method: "PUT",
+      body: JSON.stringify({
+        message: "記事を追加： " + title,
+        content: utf8ToBase64(html),
+        branch: "main"
+      })
+    });
+    if (res.ok) {
+      showDone("公開しました🎉 数分でサイトに反映され、新着記事に並びます。<br>記事のURL： https://nazmard.github.io/aquatrip-diving/blog/posts/" + fname);
+    } else if (res.status === 401) {
+      showErr("キーが無効です（401）。接続し直してください。");
+    } else if (res.status === 422) {
+      showErr("同じ名前の記事ファイルが既にあります（422）。少し時間をおいてから、もう一度お試しください。");
+    } else {
+      showErr("公開できませんでした（" + res.status + "）。「記事ファイルを作る」からの公開もお試しください。");
+    }
+  } catch (e) {
+    showErr("通信エラーで公開できませんでした。ネット接続をご確認ください。");
+  }
+});
+
+/* ---------- Post management (delete) ---------- */
+function parsePostName(name) {
+  const m = name.match(/^post-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})\.html$/);
+  if (!m) return { label: name, sort: name };
+  return { label: m[1] + "-" + m[2] + "-" + m[3] + " " + m[4] + ":" + m[5], sort: name };
+}
+$("btnLoadPosts").addEventListener("click", async () => {
+  const box = $("postList");
+  box.innerHTML = "<p class='hint'>読み込み中…</p>";
+  try {
+    const res = await fetch(API + "/contents/" + POSTS_PATH + "?ref=main&t=" + Date.now(), { headers: { "Accept": "application/vnd.github+json" } });
+    if (!res.ok) { box.innerHTML = "<p class='hint'>一覧を取得できませんでした（" + res.status + "）。</p>"; return; }
+    const items = await res.json();
+    const files = items.filter(x => x.type === "file" && /\.html$/i.test(x.name))
+      .sort((a, b) => b.name.localeCompare(a.name));
+    if (!files.length) { box.innerHTML = "<p class='hint'>記事がありません。</p>"; return; }
+    box.innerHTML = "";
+    for (const f of files) {
+      const info = parsePostName(f.name);
+      const row = document.createElement("div");
+      row.className = "postrow";
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const t = document.createElement("div");
+      t.className = "ptitle";
+      t.textContent = info.label;
+      const fn = document.createElement("div");
+      fn.className = "fname";
+      fn.textContent = f.name;
+      meta.appendChild(t); meta.appendChild(fn);
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "delbtn";
+      del.textContent = "削除";
+      del.addEventListener("click", () => deletePost(f, row));
+      row.appendChild(meta); row.appendChild(del);
+      box.appendChild(row);
+    }
+  } catch (e) {
+    box.innerHTML = "<p class='hint'>通信エラーで一覧を取得できませんでした。</p>";
+  }
+});
+async function deletePost(file, row) {
+  if (!getToken()) { showErr("削除には「GitHub接続」が必要です。先に接続してください。"); return; }
+  if (!confirm("この記事を削除しますか？\n" + file.name + "\n（サイトから消えます。GitHubの履歴からは復活できます）")) return;
+  try {
+    const res = await ghFetch("/contents/" + POSTS_PATH + "/" + file.name, {
+      method: "DELETE",
+      body: JSON.stringify({
+        message: "記事を削除： " + file.name,
+        sha: file.sha,
+        branch: "main"
+      })
+    });
+    if (res.ok) {
+      row.remove();
+      showDone("削除しました。数分でサイトからも消えます。");
+    } else if (res.status === 401) {
+      showErr("キーが無効です（401）。接続し直してください。");
+    } else if (res.status === 409 || res.status === 422) {
+      showErr("記事の情報が古くなっています。「記事の一覧を読み込む」を押し直してから、もう一度削除してください。");
+    } else {
+      showErr("削除できませんでした（" + res.status + "）。");
+    }
+  } catch (e) {
+    showErr("通信エラーで削除できませんでした。");
+  }
+}
+</script>
+</body>
+</html>
