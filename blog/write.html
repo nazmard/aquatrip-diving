@@ -15,13 +15,16 @@ h1{font-size:22px;color:var(--navy);margin:6px 0 4px}
 .panel h2{font-size:16px;color:var(--navy);margin:0 0 8px}
 label{display:block;font-size:13px;font-weight:900;color:var(--navy);margin:14px 0 6px}
 label:first-child{margin-top:0}
-input[type=text],input[type=password],input[type=date],textarea{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:white;color:var(--ink)}
+input[type=text],input[type=password],input[type=date],textarea,select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:white;color:var(--ink)}
 textarea{line-height:1.8;resize:vertical}
 .hint{font-size:11px;color:var(--muted);line-height:1.7;margin-top:5px}
 .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .thumb{position:relative;width:96px;height:96px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:#000a;color:white;font-size:14px;line-height:1;cursor:pointer}
+.thumb .num{position:absolute;left:3px;top:3px;background:#000a;color:#fff;font-size:11px;font-weight:900;border-radius:6px;padding:1px 6px}
+.thumbwrap{display:flex;flex-direction:column;gap:4px;width:96px}
+.insbtn{border:1.5px solid var(--blue);background:#eef8fa;color:var(--blue);font-weight:900;border-radius:8px;padding:5px 0;cursor:pointer;font-size:12px}
 .vrow{display:flex;gap:8px;margin-top:8px}
 .vrow input{flex:1}
 .vrow button{flex:0 0 auto;border:0;border-radius:10px;background:#f3d9d4;color:#8a2f22;font-weight:900;padding:0 13px;cursor:pointer}
@@ -72,17 +75,20 @@ code{background:#eef4f6;border-radius:5px;padding:1px 6px;font-size:12px}
 <input type="date" id="date">
 <label for="title">タイトル</label>
 <input type="text" id="title" placeholder="例：今日の八丈富士">
-<label for="cat">カテゴリ（自由に入力できます）</label>
-<input type="text" id="cat" list="catlist" placeholder="例：今日の八丈島">
-<datalist id="catlist">
-<option value="今日の八丈島"></option>
-<option value="ダイビング"></option>
-<option value="行事"></option>
-<option value="八丈島"></option>
-<option value="今日の八丈富士"></option>
-</datalist>
+<label for="catSelect">カテゴリ（選べます。新しく追加したものは次回から選べます）</label>
+<select id="catSelect">
+<option value="">（カテゴリを選ぶ）</option>
+<option value="今日の八丈島">今日の八丈島</option>
+<option value="ダイビング">ダイビング</option>
+<option value="行事">行事</option>
+<option value="八丈島">八丈島</option>
+<option value="今日の八丈富士">今日の八丈富士</option>
+<option value="__new__">＋ 新しいカテゴリを入力する</option>
+</select>
+<input type="text" id="cat" placeholder="新しいカテゴリを入力" style="display:none;margin-top:8px">
 <label for="body">本文</label>
 <textarea id="body" rows="10" placeholder="本文を書いてください。空行を入れると段落が分かれます。"></textarea>
+<p class="hint">本文にURLを貼ると、自動でリンク（ハイパーリンク）になります。写真は、下の写真の「入れる」ボタンで、本文のカーソルの場所に入れられます（入れなかった写真は記事の最後に並びます）。</p>
 
 <label>写真（何枚でもOK・自動で小さくして記事に入ります）</label>
 <input type="file" id="photos" accept="image/*" multiple>
@@ -141,6 +147,53 @@ $("date").value = today.getFullYear() + "-" + pad(today.getMonth() + 1) + "-" + 
 /* ---------- GitHub connection ---------- */
 function getToken() { try { return localStorage.getItem("aq_gh_token") || ""; } catch (e) { return ""; } }
 function setToken(t) { try { if (t) localStorage.setItem("aq_gh_token", t); else localStorage.removeItem("aq_gh_token"); } catch (e) {} }
+
+/* ---------- Category select ---------- */
+function loadLocalCats() { try { return JSON.parse(localStorage.getItem("aq_categories") || "[]"); } catch (e) { return []; } }
+function addCatOption(name) {
+  const sel = $("catSelect");
+  if (!name) return;
+  for (const o of sel.options) { if (o.value === name) return; }
+  const opt = document.createElement("option");
+  opt.value = name; opt.textContent = name;
+  sel.insertBefore(opt, sel.querySelector('option[value="__new__"]'));
+}
+function rememberCat(name) {
+  if (!name) return;
+  try {
+    const list = loadLocalCats();
+    if (!list.includes(name)) { list.push(name); localStorage.setItem("aq_categories", JSON.stringify(list)); }
+  } catch (e) {}
+  addCatOption(name);
+}
+function currentCat() {
+  const sel = $("catSelect");
+  const typed = $("cat").value.trim();
+  if (sel.value === "__new__") return typed;
+  if (sel.value) return sel.value;
+  return typed;
+}
+$("catSelect").addEventListener("change", () => {
+  const sel = $("catSelect");
+  if (sel.value === "__new__") { $("cat").style.display = ""; $("cat").focus(); }
+  else { $("cat").style.display = "none"; $("cat").value = ""; }
+});
+loadLocalCats().forEach(addCatOption);
+(async () => {
+  try {
+    const res = await fetch(API + "/contents/" + POSTS_PATH + "?ref=main&t=" + Date.now(), { headers: { "Accept": "application/vnd.github+json" } });
+    if (!res.ok) return;
+    const items = (await res.json()).filter(x => x.type === "file" && /\.html$/i.test(x.name)).slice(-40);
+    for (const it of items) {
+      try {
+        const r = await fetch(it.download_url);
+        if (!r.ok) continue;
+        const m = (await r.text()).match(/<p class="cat">カテゴリ：\s*([^<]+)/);
+        if (m) rememberCat(m[1].trim());
+      } catch (e) {}
+    }
+  } catch (e) {}
+})();
 function ghHeaders() {
   return {
     "Authorization": "Bearer " + getToken(),
@@ -212,20 +265,40 @@ $("photos").addEventListener("change", async ev => {
   ev.target.value = "";
   renderThumbs();
 });
+function insertPhotoMark(n) {
+  const ta = $("body");
+  const mark = "\n[[写真" + n + "]]\n";
+  const st = typeof ta.selectionStart === "number" ? ta.selectionStart : ta.value.length;
+  const en = typeof ta.selectionEnd === "number" ? ta.selectionEnd : ta.value.length;
+  ta.value = ta.value.slice(0, st) + mark + ta.value.slice(en);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = st + mark.length;
+}
 function renderThumbs() {
   const box = $("thumbs");
   box.innerHTML = "";
   photos.forEach((src, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "thumbwrap";
     const d = document.createElement("div");
     d.className = "thumb";
     const im = document.createElement("img");
     im.src = src;
+    const num = document.createElement("span");
+    num.className = "num";
+    num.textContent = "写真" + (i + 1);
     const b = document.createElement("button");
     b.textContent = "×";
     b.title = "この写真を外す";
     b.addEventListener("click", () => { photos.splice(i, 1); renderThumbs(); });
-    d.appendChild(im); d.appendChild(b);
-    box.appendChild(d);
+    d.appendChild(im); d.appendChild(num); d.appendChild(b);
+    const ins = document.createElement("button");
+    ins.type = "button";
+    ins.className = "insbtn";
+    ins.textContent = "本文に入れる";
+    ins.addEventListener("click", () => insertPhotoMark(i + 1));
+    wrap.appendChild(d); wrap.appendChild(ins);
+    box.appendChild(wrap);
   });
 }
 
@@ -261,16 +334,43 @@ function videoHTML(url) {
   if (/\.(mp4|webm|mov)(\?|#|$)/i.test(url)) return '<div class="video"><video controls preload="metadata" src="' + esc(url) + '"></video></div>';
   return '<p class="vlink"><a href="' + esc(url) + '" target="_blank" rel="noopener">▶ 動画を見る</a></p>';
 }
+function linkify(t) {
+  return t.replace(/https?:\/\/[^\s<]+/g, u => {
+    let tail = "";
+    const m = u.match(/[。、，）」』】］]+$/);
+    if (m) { tail = m[0]; u = u.slice(0, u.length - tail.length); }
+    return '<a href="' + u + '" target="_blank" rel="noopener">' + u + "</a>" + tail;
+  });
+}
 function buildPost() {
   const dateVal = $("date").value || $("date").defaultValue;
   const title = $("title").value.trim() || "（無題）";
-  const cat = $("cat").value.trim();
+  const cat = currentCat();
   const body = $("body").value;
   const dateParts = dateVal.split("-");
   const dateJP = dateParts.length === 3 ? (dateParts[0] + "年" + Number(dateParts[1]) + "月" + Number(dateParts[2]) + "日") : dateVal;
-  const paras = body.split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
-    .map(p => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("\n");
-  const imgs = photos.map(src => '<p><img src="' + src + '" alt=""></p>').join("\n");
+  const used = new Set();
+  const blocks = [];
+  let buf = "";
+  const flush = () => {
+    buf.split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
+      .forEach(p => blocks.push("<p>" + linkify(esc(p)).replace(/\n/g, "<br>") + "</p>"));
+    buf = "";
+  };
+  const markRe = /\[\[写真(\d+)\]\]/g;
+  let last = 0, mm;
+  while ((mm = markRe.exec(body)) !== null) {
+    buf += body.slice(last, mm.index);
+    flush();
+    const idx = Number(mm[1]) - 1;
+    if (photos[idx] && !used.has(idx)) { blocks.push('<p><img src="' + photos[idx] + '" alt=""></p>'); used.add(idx); }
+    last = mm.index + mm[0].length;
+  }
+  buf += body.slice(last);
+  flush();
+  photos.forEach((src, i) => { if (!used.has(i)) blocks.push('<p><img src="' + src + '" alt=""></p>'); });
+  const paras = blocks.join("\n");
+  const imgs = "";
   const vids = Array.from(document.querySelectorAll("#videos input")).map(i => videoHTML(i.value)).filter(Boolean).join("\n");
   const catHTML = cat ? '<p class="cat">カテゴリ： ' + esc(cat) + "</p>" : "";
   const html = "<!doctype html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>" + esc(title) + " - 八丈島アクアトリップダイビングブログ</title>\n<style>\n"
@@ -310,6 +410,7 @@ $("btnDownload").addEventListener("click", () => {
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   showDone("記事ファイル <b>" + fname + "</b> をダウンロードしました。<br>パソコンの <b>aquatrip-diving\\blog\\posts</b> フォルダに入れて、GitHub Desktopで Commit → Push origin してください。");
+  rememberCat(currentCat());
 });
 
 /* ---------- Direct publish ---------- */
@@ -341,6 +442,7 @@ $("btnPublish").addEventListener("click", async () => {
     });
     if (res.ok) {
       showDone("公開しました🎉 数分でサイトに反映され、新着記事に並びます。<br>記事のURL： https://nazmard.github.io/aquatrip-diving/blog/posts/" + fname);
+      rememberCat(currentCat());
     } else if (res.status === 401) {
       showErr("キーが無効です（401）。接続し直してください。");
     } else if (res.status === 422) {

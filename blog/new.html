@@ -38,6 +38,7 @@ footer{color:#dff3ff;text-align:center;font-size:11px;margin-top:18px;line-heigh
 "use strict";
 const API = "https://api.github.com/repos/nazmard/aquatrip-diving/contents/blog/posts";
 const BASE = "posts/";
+const wantCat = new URLSearchParams(location.search).get("cat") || "";
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 async function main(){
   const list = document.getElementById("list");
@@ -50,12 +51,18 @@ async function main(){
     list.innerHTML = '<div class="msg">新着記事を読み込めませんでした。時間をおいて開き直してみてください。</div>';
     return;
   }
-  const posts = files.filter(f => f.type === "file" && /\.html?$/i.test(f.name)).sort((a,b)=> b.name.localeCompare(a.name)).slice(0, 40);
+  const sorted = files.filter(f => f.type === "file" && /\.html?$/i.test(f.name)).sort((a,b)=> b.name.localeCompare(a.name));
+  const posts = wantCat ? sorted : sorted.slice(0, 40);
+  if(wantCat){
+    document.querySelector("h1").textContent = "🏷 カテゴリ「" + wantCat + "」の記事";
+    document.querySelector("h1").insertAdjacentHTML("afterend", '<p style="margin:0 0 12px"><a href="new.html" style="color:#fff;font-weight:900">← すべての新着記事を見る</a></p>');
+  }
   if(!posts.length){
     list.innerHTML = '<div class="msg">まだ新しい記事はありません。これから投稿される記事が、ここに並びます。</div>';
     return;
   }
   list.innerHTML = "";
+  let shown = 0;
   for(const f of posts){
     try{
       const r = await fetch(BASE + encodeURIComponent(f.name));
@@ -69,18 +76,22 @@ async function main(){
         const m = f.name.match(/(\d{4})(\d{2})(\d{2})/);
         if(m) date = m[1] + "-" + m[2] + "-" + m[3];
       }
+      const catEl = doc.querySelector("article .cat");
+      const cat = catEl ? catEl.textContent.replace(/^カテゴリ：\s*/, "").trim() : "";
+      if(wantCat && cat !== wantCat) continue;
       const img = doc.querySelector("article img");
       const imgSrc = img ? new URL(img.getAttribute("src"), new URL(BASE + f.name, location.href)).href : "";
       const a = document.createElement("a");
       a.className = "card";
       a.href = BASE + encodeURIComponent(f.name);
       a.innerHTML = (imgSrc ? '<img src="' + esc(imgSrc) + '" alt="">' : '<span class="noimg">🌊</span>')
-        + "<span><time>" + esc(date) + "</time><strong>" + esc(title) + "</strong></span>";
+        + "<span><time>" + esc(date) + "</time>" + (cat ? '<span style="font-size:12px;color:#087eaa;font-weight:800"> 🏷 ' + esc(cat) + "</span>" : "") + "<strong>" + esc(title) + "</strong></span>";
       list.appendChild(a);
+      shown++;
     }catch(e){ /* skip broken file */ }
   }
-  if(!list.children.length){
-    list.innerHTML = '<div class="msg">記事の読み込みに失敗しました。時間をおいて開き直してみてください。</div>';
+  if(!shown){
+    list.innerHTML = wantCat ? '<div class="msg">このカテゴリの記事はまだありません。</div>' : '<div class="msg">記事の読み込みに失敗しました。時間をおいて開き直してみてください。</div>';
   }
 }
 main();
