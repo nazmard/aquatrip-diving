@@ -370,6 +370,7 @@ $("btnLoadPosts").addEventListener("click", async () => {
       .sort((a, b) => b.name.localeCompare(a.name));
     if (!files.length) { box.innerHTML = "<p class='hint'>記事がありません。</p>"; return; }
     box.innerHTML = "";
+    const titleEls = [];
     for (const f of files) {
       const info = parsePostName(f.name);
       const row = document.createElement("div");
@@ -378,10 +379,10 @@ $("btnLoadPosts").addEventListener("click", async () => {
       meta.className = "meta";
       const t = document.createElement("div");
       t.className = "ptitle";
-      t.textContent = info.label;
+      t.textContent = "（題名を読み込み中…）";
       const fn = document.createElement("div");
       fn.className = "fname";
-      fn.textContent = f.name;
+      fn.textContent = info.label + " ／ " + f.name;
       meta.appendChild(t); meta.appendChild(fn);
       const del = document.createElement("button");
       del.type = "button";
@@ -390,6 +391,21 @@ $("btnLoadPosts").addEventListener("click", async () => {
       del.addEventListener("click", () => deletePost(f, row));
       row.appendChild(meta); row.appendChild(del);
       box.appendChild(row);
+      titleEls.push({ name: f.name, el: t });
+    }
+    for (const item of titleEls) {
+      try {
+        const r = await fetch("https://nazmard.github.io/aquatrip-diving/blog/posts/" + item.name + "?t=" + Date.now());
+        if (r.ok) {
+          const txt = await r.text();
+          const m = txt.match(/<title>([^<]*)<\/title>/i);
+          item.el.textContent = m ? m[1].replace(/ - 八丈島アクアトリップダイビングブログ$/, "") : item.name;
+        } else {
+          item.el.textContent = item.name;
+        }
+      } catch (e) {
+        item.el.textContent = item.name;
+      }
     }
   } catch (e) {
     box.innerHTML = "<p class='hint'>通信エラーで一覧を取得できませんでした。</p>";
